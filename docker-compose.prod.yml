@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  mexc-service:
+    image: dzarembo/mexc-service:latest
+    container_name: mexc-service
+    ports:
+      - "8087:8087"
+    environment:
+      SERVER_PORT: 8087
+      SPRING_PROFILES_ACTIVE: prod
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8087/actuator/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
