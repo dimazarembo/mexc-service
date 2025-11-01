@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -30,8 +31,13 @@ public class MexcApiClient {
             }
 
             return response.getData().stream()
+                    // 1️⃣ оставляем только пары с USDT
+                    .filter(item -> item.getSymbol() != null && item.getSymbol().contains("USDT"))
+                    // 2️⃣ исключаем USD-пары без T
+                    .filter(item -> !item.getSymbol().contains("USD_") || item.getSymbol().contains("USDT"))
+                    // 3️⃣ мапим в FundingRate
                     .map(this::mapToFundingRate)
-                    .filter(fr -> fr != null)
+                    .filter(Objects::nonNull)
                     .toList();
 
         } catch (Exception e) {
@@ -67,7 +73,7 @@ public class MexcApiClient {
     }
 
     private String normalizeSymbol(String symbol) {
-        // "BTC_USDT" -> "BTCUSDT"
+        // "BTC_USDT" → "BTCUSDT"
         return symbol.replace("_", "");
     }
 
